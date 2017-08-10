@@ -1,6 +1,6 @@
-const db = require('../db');
-module.exports = db.defineModel('users', {
-    name: db.STRING(100),
-    password: db.STRING(100)
-});
+// const db = require('../db');
+// module.exports = db.defineModel('users', {
+//     name: db.STRING(100),
+//     password: db.STRING(100)
+// });
  

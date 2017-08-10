@@ -1,5 +1,7 @@
-const products = require('../dao/productDao');
+// const products = require('../dao/productDao');
 const APIError = require('../rest').APIError;
+
+const products = require('../dao/prodDao');
 
 module.exports = {
     'GET /api/products/allProd': async (ctx, next) => {//获取所有商品接口

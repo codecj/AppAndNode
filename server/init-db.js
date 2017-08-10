@@ -1,4 +1,4 @@
-const model = require('./model.js');
-model.sync();
+// const model = require('./model.js');
+// model.sync();
 
-console.log('init db ok.');
+// console.log('init db ok.');
