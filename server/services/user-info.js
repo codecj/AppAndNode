@@ -3,7 +3,7 @@
  */
 
 const userModel = require('../models/user')
-const userCode = require('../codes/user')
+const userCode = require('../common/codeReason')
 
 //所有的操作数据库在这里写，在dao里面调用返回的数据
 const user = {

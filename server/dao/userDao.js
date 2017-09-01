@@ -1,6 +1,6 @@
 
 const userInfoService = require('../services/user-info')
-const userCode = require('../codes/user')
+const userCode = require('../common/codeReason')
 //执行一系列逻辑处理，调用services里面处理操作数据库返回的结果，做body返回数据
 module.exports = {
 
