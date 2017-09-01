@@ -1,45 +1,157 @@
 
-// const model = require('../model');
-// const reason = require('../common/codeReason');
-// const md5 = require('../common/util');
-// const validator = require('../common/validator');
+const userInfoService = require('../services/user-info')
+const userCode = require('../codes/user')
+//执行一系列逻辑处理，调用services里面处理操作数据库返回的结果，做body返回数据
+module.exports = {
 
-// let Users = model.user;
+  /**
+   * 登录操作
+   * @param  {obejct} ctx 上下文对象
+   */
+  async signIn( ctx ) {
+    console.log("登录")
+    let formData = ctx.request.body
+    let result = {
+      success: false,
+      message: '',
+      data: null,
+      code: ''
+    }
 
-// function User(name,password){
-//     this.name = name;
-//     this.password = password;
-// }
+    let userResult = await userInfoService.signIn( formData )
+    if ( userResult ) {
+      if ( formData.email === userResult.email ) {
+        result.success = true;
+      } else {
+        result.message = userCode.FAIL_USER_NAME_OR_PASSWORD_ERROR
+        result.code = 'FAIL_USER_NAME_OR_PASSWORD_ERROR'
 
-// module.exports = {
-//     login: (username,password) => {//用户登录
-//         let code ="";
-//         let pw = md5.mdparam(password);
-//         if(!validator.isNullOrEmpty(username) || !validator.isNullOrEmpty(password)){
-//             return (async () => {
-//                 code = reason.SUCCESS;
-//                 var user = await Users.findAll({
-//                     where:{name:username,password:pw}
-//                 });
-//                 if(user != ""){
-//                     return {user,code};
+      }
+    } else {
 
-//                 }else{
-//                     code = reason.RECORD_NOT_EXISTS_ERR_CODE;
-//                     return {user,code};
-//                 }
-//             })();
-//         }
-//     },
-//     register:(name,password)=>{
-//         let pw = md5.mdparam(password);
-//         var usr = new User(name,pw);
-//         return (async () => {
-//             await Users.create(usr);
-//             let user = await Users.findAll({
-//                 where:{name:name,password:pw}
-//             });
-//             return user;
-//         })();
-//     }
-// };
+        result.message = userCode.getReason(userCode.ORDER_AMOUNT_ERR_CODE),
+        result.code = userCode.ORDER_AMOUNT_ERR_CODE
+    }
+
+    if ( formData.source === 'form' && result.success === true ) {
+      let session = ctx.session
+      session.isLogin = true
+      session.userName = userResult.name
+      session.userId = userResult.id
+
+      // ctx.redirect('/work')
+    } else {
+      ctx.body = result
+    }
+  },
+
+  /**
+   * 注册操作
+   * @param   {obejct} ctx 上下文对象
+   */
+  async signUp( ctx ) {
+    console.log("注册")
+    let formData = ctx.request.body
+    let result = {
+      success: false,
+      message: '',
+      data: null
+    }
+
+    let validateResult = userInfoService.validatorSignUp(formData )
+    if ( validateResult.success === false ) {
+      result = validateResult
+      ctx.body = result
+      return
+    }
+
+    let existOne  = await userInfoService.getExistOne(formData)
+
+    if ( existOne  ) {
+      if ( existOne.name === formData.userName ) {
+        result.message = userCode.FAIL_USER_NAME_OR_PASSWORD_ERROR
+        ctx.body = result
+        return
+      }
+      if ( existOne.email === formData.email ) {
+        result.message = userCode.FAIL_USER_NAME_OR_PASSWORD_ERROR
+        ctx.body = result
+        return
+      }
+    }
+
+    let userResult = await userInfoService.create({
+      email: formData.email,
+      password: formData.password,
+      name: formData.userName,
+      create_time: new Date().getTime(),
+      level: 1,
+    })
+    if ( userResult && userResult.insertId * 1 > 0) {
+      result.success = true
+    } else {
+      result.message = userCode.ERROR_SYS
+    }
+    ctx.body = result
+  },
+
+  /**
+   * 获取用户信息
+   * @param    {obejct} ctx 上下文对象
+   */
+  async getLoginUserInfo( ctx ) {
+    let session = ctx.session
+    let isLogin = session.isLogin
+    let userName = session.userName
+
+    console.log( 'session=', session )
+
+    let result = {
+      success: false,
+      message: '',
+      data: null,
+    }
+    if ( isLogin === true && userName ) {
+      let userInfo = await userInfoService.getUserInfoByUserName( userName )
+      if ( userInfo ) {
+        result.data = userInfo
+        result.success = true
+      } else {
+        result.message = userCode.FAIL_USER_NO_LOGIN
+      }
+    } else {
+      // TODO
+    }
+
+    ctx.body = result
+  },
+///////////////////
+
+ async all( ctx ) {
+  console.log("dao")
+  let userInfo = await userInfoService.all()
+  ctx.body = userInfo
+ },
+//////////////////
+  /**
+   * 校验用户是否登录
+   * @param  {obejct} ctx 上下文对象
+   */
+  validateLogin( ctx ) {
+    let result = {
+      success: false,
+      message: userCode.FAIL_USER_NO_LOGIN,
+      data: null,
+      code: 'FAIL_USER_NO_LOGIN',
+    } 
+    let session = ctx.session
+    if( session && session.isLogin === true  ) {
+      result.success = true
+      result.message = ''
+      result.code = ''
+    }
+    return result
+  }
+
+
+}

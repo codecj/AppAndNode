@@ -30,131 +30,24 @@ $(function(){
            
         },
         methods: {
-            getProducts(){//获取
-                let that = this;
-                // console.log(JSON.stringify(that.pagram))
-                $.ajax({
-                    type: 'get',
-                    dataType: 'json',
-                    contentType: 'application/json',
-                    url: 'http://127.0.0.1:3000/api/products/allProd?name='+this.pagram.name+'&price='+this.pagram.price
-
-                    // data:JSON.stringify(pagram)
-                }).done(function (data) {
-                    console.log(data)
-                    that.products = data.data;
-
-                }).fail(function (jqXHR, textStatus) {
-                    alert('Error: ' + jqXHR.status);
-                });
-            },
-
-            addProduct:function(e){//添加
-                var submit = document.getElementById("submit");
-                var name = document.getElementById("name");
-                var price = document.getElementById("price");
-                e.preventDefault();
-                    var product = {
-                        name: name.value,
-                        price: price.value
-                    }
-                var that = this;
-                that.products = [];
-                $.ajax({
-                    type: 'post',
-                    dataType: 'json',
-                    contentType: 'application/json',
-                    url: 'http://127.0.0.1:3000/api/addproducts',
-                    data: JSON.stringify(product)
-                }).done(function (r) {
-                    console.log(r)
-                    if(r.data){
-                        r.data.forEach(item=>{
-                            that.products.push(item);
-                        })
-                        that.getProducts();
-                    }
-                  
-                    
-                }).fail(function (jqXHR, textStatus) {
-                    // alert('Error: ' + jqXHR.status);
-                });
-            },
-            deleteProduct: function (id) {//删除
-                var that = this;
-                // AJAX提交JSON:
-                $.ajax({
-                    type: 'delete',
-                    dataType: 'json',
-                    url: 'http://127.0.0.1:3000/api/products?id=' + id
-                }).done(function (r) {
-                    console.log(r)
-                    that.getProducts();
-
-                }).fail(function (jqXHR, textStatus) {
-                    // alert('Error: ' + jqXHR.status);
-                });
-            },
-            editProduct: function (e,id) {//编辑
-                e.preventDefault();
-                id = this.changeId;
-                var change = document.getElementById("change");
-                var name = document.getElementById("name");
-                var price = document.getElementById("price");
-                var product = {
-                    name: name.value,
-                    price: price.value
-                }
-                var that = this;
-
-                // alert(JSON.stringify(product))
-                // AJAX提交JSON:
-                $.ajax({
-                    type: 'put',
-                    dataType: 'json',
-                    contentType: 'application/json',
-                    url: 'http://127.0.0.1:3000/api/products?id='+ id,
-                    data: JSON.stringify(product)
-                }).done(function (r) {
-                    console.log(r)
-                    that.getProducts();
-                }).fail(function (jqXHR, textStatus) {
-                    // alert('Error: ' + jqXHR.status);
-                });
-            },
-            changeEdit(id){
-                this.changeId = id;
-            },
-            search(){
-                let searchName = document.getElementById("searchName").value;
-                let searchPrice = document.getElementById("searchPrice").value;
-                this.pagram.name = searchName;
-                this.pagram.price = searchPrice;
-                // console.log(this.pagram)
-                this.getProducts();
-            }
-            ,
             login(e){
                 e.preventDefault();
                 let userName = document.getElementById("username").value;
                 let password = document.getElementById("password").value;
                 var namepw={
-                    username:userName,
+                    email:userName,
                     password:password
                 }
                  $.ajax({
                     type: 'post',
                     dataType: 'json',
                     contentType: 'application/json',
-                    url: 'http://127.0.0.1:3000/api/login',
+                    url: 'http://127.0.0.1:3001/api/user/signIn',
                     data: JSON.stringify(namepw)
                 }).done(function (r) {
                    console.log(r)
-                   // if(r.length == 0){
-                   //      console.log("没有该用户名")
-                   // }else{
-                   //      console.log("登录成功")
-                   // }
+
+               
                 }).fail(function (jqXHR, textStatus) {
                     // alert('Error: ' + jqXHR.status);
                 });
@@ -165,7 +58,7 @@ $(function(){
                 let userName = document.getElementById("username").value;
                 let password = document.getElementById("password").value;
                 var namepw={
-                    username:userName,
+                    email:userName,
                     password:password
                 }
                 let that = this;
@@ -173,8 +66,23 @@ $(function(){
                     type: 'post',
                     dataType: 'json',
                     contentType: 'application/json',
-                    url: 'http://127.0.0.1:3000/api/register',
+                    url: 'http://127.0.0.1:3001/api/user/signUp',
                     data: JSON.stringify(namepw)
+                }).done(function (r) {
+                   console.log(r)
+                  // that.getProducts();
+                }).fail(function (jqXHR, textStatus) {
+                    // alert('Error: ' + jqXHR.status);
+                });
+            }
+             ,
+            search(e){
+               
+                $.ajax({
+                    type: 'post',
+                    dataType: 'json',
+                    contentType: 'application/json',
+                    url: 'http://127.0.0.1:3001/api/user/all',
                 }).done(function (r) {
                    console.log(r)
                   // that.getProducts();
@@ -185,7 +93,7 @@ $(function(){
            
         },
         mounted(){
-            this.getProducts();
+            // this.getProducts();
             
         }
     });
@@ -208,63 +116,16 @@ $(function(){
         border:1px solid #ccc;
     }
 </style>
-<div>
-    <div id="left" >
-    <div>
-  <!--   <form action="/api/login" method="post">
-        <input type="text" placeholder="用户名" id="username" name="username">
-        <input type="password" placeholder="密码" id="password" name="password">
-        <button>请先登录</button>
-    </form> -->
-     <!-- <form> -->
-        <input type="text" placeholder="用户名" id="username">
-        <input type="password" placeholder="密码" id="password">
-        <span v-on:click="login">请先登录</span>
-        <span v-on:click="register">注册</span>
-
-    <!-- </form> -->
-    </div>
-        <table>
-            <thead>
-                <tr>
-                    <td >名字</td>
-                    <td>价格</td>
-                    <td>编辑</td>
-                    <td>删除</td>
-                </tr>
-            </thead>
-            <tbody> 
-                <tr v-for="p in products" :id="p.id">
-                    <td>{{p.name}}</td>
-                    <td>{{p.price}}</td>
-                    <td v-on:click="changeEdit(p.id)">edit</td>
-                    <td v-on:click="deleteProduct(p.id)">delect</td>
-                </tr>
-            </tbody>
-            
-        </table>
-        <div>
-             <form>
-                <input type="search" placeholder="搜索名字" id="searchName">
-                <input type="search" placeholder="搜索价格" id="searchPrice">
-                <span v-on:click="search">搜索</span>
-
-            </form>
-            <form id="product-form">
-
-                <input type="text" placeholder="输入名字" id="name">
-                <input type="text" placeholder="输入价格" id="price">
-                <button id="submit" v-on:click="addProduct">新增</button>
-                <button id="change" v-on:click="editProduct">修改</button>
-            </form>
-
-            
-        </div>
-    </div>
+<div id="left" >
+    <input type="text" placeholder="用户名" id="username">
+    <input type="password" placeholder="密码" id="password">
+    <span v-on:click="login">请先登录</span>
+    <span v-on:click="register">注册</span>
+     <span v-on:click="search">查看</span>
 </div>
-    <div style="line-height:50px;border-top:1px solid #ccc">
-        尾部
-    </div>
+<div style="line-height:50px;border-top:1px solid #ccc">
+    尾部
+</div>  
 </body>
 
 </html>
